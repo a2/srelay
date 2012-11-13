@@ -39,7 +39,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/ioctl.h>
 #include <sys/sockio.h>
 #include <net/if.h>
-#ifdef __IPHONE_OS_MIN_REQUIRED
+#ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
 #include "route.h"
 #else
 #include <net/route.h>
