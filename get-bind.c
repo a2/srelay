@@ -39,7 +39,11 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/ioctl.h>
 #include <sys/sockio.h>
 #include <net/if.h>
+#ifdef __IPHONE_OS_MIN_REQUIRED
+#include "route.h"
+#else
 #include <net/route.h>
+#endif
 #ifdef	HAVE_SOCKADDR_DL_STRUCT
 # include <net/if_dl.h>
 #endif
