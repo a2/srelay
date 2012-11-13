@@ -40,7 +40,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 void msg_out_default(int severity, const char *fmt, ...);
 
 int forcesyslog = 0;
-void (*msg_out_callback_)__P((int, const char *, ...)) = msg_out_default;
+void (*msg_out_callback)__P((int, const char *, ...)) = msg_out_default;
 
 void msg_out_default(int severity, const char *fmt, ...)
 {
