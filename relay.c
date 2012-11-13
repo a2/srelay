@@ -62,6 +62,9 @@ void relay_tcp __P((SOCKS_STATE *));
 void relay_udp __P((SOCKS_STATE *));
 int log_transfer __P((SOCK_INFO *, LOGINFO *));
 
+void (*log_end_transfer_callback)(SOCK_INFO *si, LOGINFO *li, struct timeval elp, const char *prc_ip, const char *prc_port, const char *myc_ip, const char *myc_port, const char *mys_ip, const char *mys_port, const char *prs_ip, const char *prs_port) = NULL;
+void (*log_tmp_transfer_callback)(SOCK_INFO *si, LOGINFO *li, ssize_t download, ssize_t upload) = NULL;
+
 void readn(rlyinfo *ri)
 {
   ri->nread = 0;
@@ -315,8 +318,10 @@ void relay_tcp(SOCKS_STATE *state)
 	if ((wc = forward(&ri)) <= 0)
 	  done++;
 	else
+    {
 	  li.bc += wc; li.dnl += wc;
-
+      if (log_tmp_transfer_callback) log_tmp_transfer_callback(state->si, &li, wc, 0);
+    }
 	FD_CLR(state->r, &rfds);
       }
       if (FD_ISSET(state->r, &xfds)) {
@@ -324,7 +329,10 @@ void relay_tcp(SOCKS_STATE *state)
 	if ((wc = forward(&ri)) <= 0)
 	  done++;
 	else
+    {
 	  li.bc += wc; li.dnl += wc;
+      if (log_tmp_transfer_callback) log_tmp_transfer_callback(state->si, &li, wc, 0);
+    }
 	FD_CLR(state->r, &xfds);
       }
       if (FD_ISSET(state->s, &rfds)) {
@@ -332,7 +340,10 @@ void relay_tcp(SOCKS_STATE *state)
 	if ((wc = forward(&ri)) <= 0)
 	  done++;
 	else
+    {
 	  li.bc += wc; li.upl += wc;
+      if (log_tmp_transfer_callback) log_tmp_transfer_callback(state->si, &li, wc, 0);
+    }
 	FD_CLR(state->s, &rfds);
       }
       if (FD_ISSET(state->s, &xfds)) {
@@ -340,7 +351,10 @@ void relay_tcp(SOCKS_STATE *state)
 	if ((wc = forward(&ri)) <= 0)
 	  done++;
 	else
+    {
 	  li.bc += wc; li.upl += wc;
+      if (log_tmp_transfer_callback) log_tmp_transfer_callback(state->si, &li, wc, 0);
+    }
 	FD_CLR(state->s, &xfds);
       }
       if (done > 0)
@@ -414,7 +428,10 @@ void relay_udp(SOCKS_STATE *state)
 	if ((wc = forward_udp(&ri, state->sr.udp, state->rtbl.rl_meth)) < 0)
 	  done++;
 	else
+    {
 	  li.bc += wc; li.upl += wc;
+      if (log_tmp_transfer_callback) log_tmp_transfer_callback(state->si, &li, wc, 0);
+    }
 	FD_CLR(state->sr.udp->d, &rfds);
       }
       if (state->sr.udp->u >= 0 && FD_ISSET(state->sr.udp->u, &rfds)) {
@@ -423,7 +440,10 @@ void relay_udp(SOCKS_STATE *state)
 	if ((wc = forward_udp(&ri, state->sr.udp, state->rtbl.rl_meth)) < 0)
 	  done++;
 	else
+    {
 	  li.bc += wc; li.dnl += wc;
+      if (log_tmp_transfer_callback) log_tmp_transfer_callback(state->si, &li, wc, 0);
+    }
 	FD_CLR(state->sr.udp->d, &rfds);
       }
       /* packets on TCP channel may indicate
@@ -522,6 +542,8 @@ int log_transfer(SOCK_INFO *si, LOGINFO *li)
 	  mys_ip, mys_port, prs_ip, prs_port,
 	  li->bc, li->upl, li->dnl,
 	  elp.tv_sec, elp.tv_usec);
+
+  if (log_end_transfer_callback) log_end_transfer_callback(si, li, elp, prc_ip, prc_port, myc_ip, myc_port, mys_ip, mys_port, prs_ip, prs_port);
 
   return(0);
 }
